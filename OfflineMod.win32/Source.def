@@ -1,0 +1,11 @@
+LIBRARY libcurl
+EXPORTS
+	curl_easy_escape = proxy_easy_escape
+	curl_easy_cleanup = proxy_easy_cleanup
+	curl_easy_strerror = proxy_easy_strerror
+	curl_easy_perform = proxy_easy_perform
+	curl_easy_setopt = proxy_curl_setopt
+	curl_easy_init = proxy_curl_init
+	curl_easy_getinfo = proxy_easy_getinfo
+	curl_slist_append = proxy_slist_append
+	curl_slist_free_all = proxy_slist_free_all
