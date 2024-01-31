@@ -98,7 +98,6 @@ extern "C" CURL* proxy_curl_init()
 #ifdef _DEBUG
 	curl_easy_setopt(c, CURLOPT_DEBUGFUNCTION, debug_callback);
 	printf("CURL INIT!!!\n");
-	//MessageBoxA(nullptr, "SLEEP_CURL", "DEBUG", MB_OK);
 #endif
 	return c;
 }
@@ -112,7 +111,6 @@ extern "C" CURLcode proxy_curl_setopt(CURL* handle, CURLoption option, ...)
 
 #ifdef _DEBUG
 	printf("CURL SETOPT -> %x\n", option);
-	//MessageBoxA(nullptr, "SLEEP_CURL", "DEBUG", MB_OK);
 #endif
 
 	switch (option)
@@ -142,7 +140,6 @@ extern "C" CURLcode proxy_curl_setopt(CURL* handle, CURLoption option, ...)
 		va_start(arg2, option);
 		char* ip = va_arg(arg2, char*);
 		printf("CURL CONNECT -> %s\n", ip);
-		//MessageBoxA(nullptr, "SLEEP", "DEBUG", MB_OK);
 		va_end(arg2);
 	}
 #endif
