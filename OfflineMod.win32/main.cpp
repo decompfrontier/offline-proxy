@@ -51,6 +51,12 @@ typedef HINTERNET(WINAPI* HttpOpenRequestW_t)(
     _In_ DWORD_PTR dwContext
 );
 
+#ifndef _DEBUG
+typedef void (WINAPI* OfflineModStartup_t)(void);
+static HMODULE g_ofmLib = nullptr;
+static OfflineModStartup_t g_ofmStartup = nullptr;
+#endif
+
 static InternetConnectW_t TrueInternetConnectW = InternetConnectW;
 static InternetConnectA_t TrueInternetConnectA = InternetConnectA;
 static HttpOpenRequestA_t TrueHttpOpenRequestA = HttpOpenRequestA;
@@ -187,6 +193,12 @@ BOOL WINAPI DllMain(
 
     if (fdwReason == DLL_PROCESS_DETACH)
     {
+#ifndef _DEBUG
+        if (g_ofmLib)
+        {
+            FreeLibrary(g_ofmLib);
+        }
+#endif
         DetourDetach();
     }
     else if (fdwReason == DLL_PROCESS_ATTACH)
@@ -199,7 +211,24 @@ BOOL WINAPI DllMain(
         FILE* dummy;
         freopen_s(&dummy, "CONOUT$", "w", stdout);
         freopen_s(&dummy, "CONOUT$", "w", stderr);
+#else
+        g_ofmLib = LoadLibraryW(L"offlinemod.dll");
+        if (!g_ofmLib)
+        {
+            MessageBoxA(nullptr, "Unable to find the offline mod component, the application will now exit!", "Fatal Error", MB_OK | MB_ICONERROR);
+            return FALSE;
+        }
+        g_ofmStartup = (OfflineModStartup_t)GetProcAddress(g_ofmLib, "OfflineMod_startup");
+        if (!g_ofmStartup)
+        {
+            MessageBoxA(nullptr, "The offline mod component is corrupted, the application will now exit!", "Fatal Error", MB_OK | MB_ICONERROR);
+            FreeLibrary(g_ofmLib);
+            return FALSE;
+        }
+
+        g_ofmStartup();
 #endif
+
         DetourAttach();
     }
 
