@@ -5,10 +5,11 @@ connection to a local server, as well as embedding the offline server itself.
 ## Compatibility
 The proxy only works for Windows 8+ 32-bit
 
-## Building
+## Requirements
 - Visual Studio 2022 or MinGW
 - CMake 3.20 or later
 
+## Building
 1. Clone this repository
 2. Setup an environment variable called "VCPKG_ROOT" that points to your vcpkg home directory
 3. Create a build directory
