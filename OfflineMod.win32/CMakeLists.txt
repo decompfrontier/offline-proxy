@@ -15,9 +15,9 @@ target_link_libraries(offlineproxy PRIVATE
     winhttp
 )
 set_target_properties(offlineproxy PROPERTIES
-    OUTPUT_NAME curl
-    OUTPUT_NAME_Debug curl
-    OUTPUT_NAME_RelWithDebInfo curl
+    OUTPUT_NAME ${CURL_NAME}
+    OUTPUT_NAME_Debug ${CURL_NAME}
+    OUTPUT_NAME_RelWithDebInfo ${CURL_NAME}
 )
 
 target_compile_definitions(offlineproxy PRIVATE -D_UNICODE -D_WIN32_WINNT=0x601)

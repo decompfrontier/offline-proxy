@@ -9,11 +9,11 @@ The proxy only works for Windows 8+ 32-bit
 - Visual Studio 2022 or MinGW
 - CMake 3.20 or later
 
-* Clone this repository
-* Setup an environment variable called "VCPKG_ROOT" that points to your vcpkg home directory
-* Create a build directory
-* Go to the build directory with your favioute shell
-* Run cmake `cmake --preset (selected preset) ../`
+1. Clone this repository
+2. Setup an environment variable called "VCPKG_ROOT" that points to your vcpkg home directory
+3. Create a build directory
+4. Go to the build directory with your favioute shell
+5. Run cmake `cmake --preset (selected preset) ../`
 
 You will find libcurl.dll inside the bin/ directory of your build directory.
 
