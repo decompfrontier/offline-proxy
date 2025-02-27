@@ -436,6 +436,9 @@ vcpkg_installed/
 # ninja
 .ninja_deps
 .ninja_log
+*.vcxproj
+*.vcxproj.filters
+*.sln
 
 # cmake
 CMakeLists.txt.user
