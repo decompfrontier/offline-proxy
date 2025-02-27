@@ -6,5 +6,25 @@ connection to a local server, as well as embedding the offline server itself.
 The proxy only works for Windows 8+ 32-bit
 
 ## Building
-- vcpkg (installed the integration to Visual Studio)
-- Visual Studio 2022
+- Visual Studio 2022 or MinGW
+- CMake 3.20 or later
+
+* Clone this repository
+* Setup an environment variable called "VCPKG_ROOT" that points to your vcpkg home directory
+* Create a build directory
+* Go to the build directory with your favioute shell
+* Run cmake `cmake --preset (selected preset) ../`
+
+You will find libcurl.dll inside the bin/ directory of your build directory.
+
+### Presets
+
+| Name | Description |
+| ---- | ----------- |
+| deploy-vs | Configuration for deployment to the BF client using Visual Studio as a compiler |
+| deploy-mingw | Configuration for deployment to the BF client using MinGW as a compiler |
+| debug-vs | Configuration for testing the BF client with a local server using Visual Studio as a compiler |
+| debug-mingw | Configuration for testing the BF client with a local server using MinGW as a compiler |
+
+## License
+GNU Affero General Public License 3.0 or greater.

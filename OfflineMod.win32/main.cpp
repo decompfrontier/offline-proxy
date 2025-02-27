@@ -51,7 +51,7 @@ typedef HINTERNET(WINAPI* HttpOpenRequestW_t)(
     _In_ DWORD_PTR dwContext
 );
 
-#ifndef _DEBUG
+#ifdef OFFLINE_DEPLOY
 typedef void (WINAPI* OfflineModStartup_t)(void);
 static HMODULE g_ofmLib = nullptr;
 static OfflineModStartup_t g_ofmStartup = nullptr;
@@ -73,7 +73,7 @@ static HINTERNET WINAPI MyInternetConnectA(
     _In_ DWORD_PTR     dwContext
 )
 {
-#ifdef _DEBUG
+#ifndef OFFLINE_DEPLOY
     printf("InternetConnectA: %s:%u (SVC:%x)\n", lpszServerName, nServerPort, dwService);
 #endif
 
@@ -94,7 +94,7 @@ static HINTERNET WINAPI MyInternetConnectW(
     _In_ DWORD_PTR     dwContext
 )
 {
-#ifdef _DEBUG
+#ifndef OFFLINE_DEPLOY
     wprintf(L"InternetConnectW: %s:%u (SVC:%x)\n", lpszServerName, nServerPort, dwService);
 #endif
 
@@ -165,10 +165,10 @@ static void DetourDetach()
 {
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
-    DetourDetach(&(PVOID&)TrueInternetConnectA, MyInternetConnectA);
-    DetourDetach(&(PVOID&)TrueInternetConnectW, MyInternetConnectW);
-    DetourDetach(&(PVOID&)TrueHttpOpenRequestA, MyHttpOpenRequestA);
-    DetourDetach(&(PVOID&)TrueHttpOpenRequestW, MyHttpOpenRequestW);
+    DetourDetach(&(PVOID&)TrueInternetConnectA, (PVOID)MyInternetConnectA);
+    DetourDetach(&(PVOID&)TrueInternetConnectW, (PVOID)MyInternetConnectW);
+    DetourDetach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
+    DetourDetach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
     DetourTransactionCommit();
 }
 
@@ -176,10 +176,10 @@ static void DetourAttach()
 {
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
-    DetourAttach(&(PVOID&)TrueInternetConnectA, MyInternetConnectA);
-    DetourAttach(&(PVOID&)TrueInternetConnectW, MyInternetConnectW);
-    DetourAttach(&(PVOID&)TrueHttpOpenRequestA, MyHttpOpenRequestA);
-    DetourAttach(&(PVOID&)TrueHttpOpenRequestW, MyHttpOpenRequestW);
+    DetourAttach(&(PVOID&)TrueInternetConnectA, (PVOID)MyInternetConnectA);
+    DetourAttach(&(PVOID&)TrueInternetConnectW, (PVOID)MyInternetConnectW);
+    DetourAttach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
+    DetourAttach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
     DetourTransactionCommit();
 }
 
@@ -193,7 +193,7 @@ BOOL WINAPI DllMain(
 
     if (fdwReason == DLL_PROCESS_DETACH)
     {
-#ifndef _DEBUG
+#ifdef OFFLINE_DEPLOY
         if (g_ofmLib)
         {
             FreeLibrary(g_ofmLib);
@@ -203,7 +203,7 @@ BOOL WINAPI DllMain(
     }
     else if (fdwReason == DLL_PROCESS_ATTACH)
     {
-#ifdef _DEBUG
+#ifndef OFFLINE_DEPLOY
         if (!AllocConsole())
         {
             MessageBoxA(nullptr, "ALLOC_CONSOLE_FAILED", "DEBUG", MB_OK | MB_ICONERROR);

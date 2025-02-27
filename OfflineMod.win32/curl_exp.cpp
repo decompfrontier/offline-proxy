@@ -133,7 +133,7 @@ extern "C" CURLcode proxy_curl_setopt(CURL* handle, CURLoption option, ...)
 	va_list arg;
 	va_start(arg, option);
 
-#ifdef _DEBUG
+#ifndef OFFLINE_DEPLOY
 	if (option == CURLOPT_URL)
 	{
 		va_list arg2;
@@ -163,7 +163,7 @@ extern "C" void proxy_easy_cleanup(CURL* handle)
 extern "C" const char* proxy_easy_strerror(CURLcode errornum)
 {
 	const auto& x = curl_easy_strerror(errornum);
-#ifdef _DEBUG
+#ifndef OFFLINE_DEPLOY
 	printf("CURL ERROR: %s\n", x);
 #endif
 	return x;

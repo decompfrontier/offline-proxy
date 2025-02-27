@@ -1,0 +1,91 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "vs",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "Win32",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": {
+                    "type": "STRING",
+                    "value": "x86-windows-static"
+                }
+            },
+            "hidden": true
+        },
+        {
+            "name": "mingw",
+            "generator": "Ninja",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": {
+                    "type": "STRING",
+                    "value": "${sourceDir}/mingw.toolchain"
+                },
+                "VCPKG_TARGET_TRIPLET": {
+                    "type": "STRING",
+                    "value": "x86-mingw-static"
+                },
+                "MINGW": {
+                    "type": "BOOL",
+                    "value": true
+                }
+            },
+            "hidden": true
+        },
+        {
+            "name": "deploy-vs",
+            "inherits": "vs",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "RelWithDebInfo"
+                },
+                "OFFLINEMOD_DEPLOY": {
+                    "type": "BOOL",
+                    "value": true
+                }
+            }
+        },
+        {
+            "name": "deploy-mingw",
+            "inherits": "mingw",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "RelWithDebInfo"
+                },
+                "OFFLINEMOD_DEPLOY": {
+                    "type": "BOOL",
+                    "value": true
+                }
+            }
+        },
+        {
+            "name": "debug-vs",
+            "inherits": "vs",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        },
+        {
+            "name": "debug-mingw",
+            "inherits": "mingw",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        }
+    ]
+}

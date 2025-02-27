@@ -1,7 +1,13 @@
 {
-    "dependencies":
-    [
-        "curl",
-        "detours"
-    ]
+  "dependencies": [
+    {
+      "name": "curl",
+      "default-features": false,
+      "features": [
+        "mbedtls",
+        "ldap",
+        "non-http"
+      ]
+    }
+  ]
 }
