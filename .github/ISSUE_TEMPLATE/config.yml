@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Server repository (bugs, features, game logic)
+    url: https://github.com/decompfrontier/server/issues
+    about: For server emulator issues, game logic, or general Brave Frontier offline mod discussion, please open an issue in the server repository.
