@@ -7,6 +7,7 @@
 #include "pch.h"
 #include <detours/detours.h>
 #include <serverconfig.h>
+#include "fps_cap.h"
 
 typedef HINTERNET(WINAPI* InternetConnectW_t)(
     _In_ HINTERNET     hInternet,
@@ -176,6 +177,7 @@ static void DetourDetach()
     DetourDetach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
     DetourDetach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
 #endif
+    FpsCap_Detach();
     DetourTransactionCommit();
 }
 
@@ -189,6 +191,7 @@ static void DetourAttach()
     DetourAttach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
     DetourAttach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
 #endif
+    FpsCap_Attach();
     DetourTransactionCommit();
 }
 

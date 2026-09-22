@@ -42,5 +42,21 @@ if (NOT DEFINED OFFLINEMOD_DISABLE_HTTPS)
     set(OFFLINEMOD_DISABLE_HTTPS 1)
 endif()
 
+# 60 FPS render-loop cap. The shipped client ticks once per display vblank
+# without internal gating, so on >60 Hz monitors animations play too fast
+# and short clicks register as held-down. Set to 0 to disable the hook.
+# Runtime override: set the OFFLINEMOD_FPS_CAP environment variable to change
+# the cap without rebuilding (0 disables, 1..1000 sets the cap).
+if (NOT DEFINED OFFLINEMOD_FPS_CAP)
+    set(OFFLINEMOD_FPS_CAP 60)
+endif()
+
+# Compile in diagnostic logging for the FPS cap hook (writes %TEMP%\
+# offlinemod_fps.log + OutputDebugString). Useful when debugging the hook
+# attach state or verifying call rates; off in normal builds.
+if (NOT DEFINED OFFLINEMOD_FPS_CAP_DIAG)
+    set(OFFLINEMOD_FPS_CAP_DIAG 0)
+endif()
+
 add_subdirectory(detours)
 add_subdirectory(OfflineMod.win32)

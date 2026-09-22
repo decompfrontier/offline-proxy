@@ -3,6 +3,8 @@ configure_file("${CMAKE_CURRENT_LIST_DIR}/serverconfig.h.cmake" "${CMAKE_CURRENT
 add_library(offlineproxy SHARED
     main.cpp
     curl_exp.cpp
+    fps_cap.cpp
+    fps_cap.h
     Source.def
     #Resource.rc
     resource.h

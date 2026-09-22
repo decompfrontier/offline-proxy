@@ -64,6 +64,21 @@ You can modify some of the Proxy behaviour by defining the CMake variables defin
 | OFFLINEMOD_IP             | Sets the server IP which the proxy would connect                                         | 127.0.0.1       |
 | OFFLINEMOD_PORT           | Sets the server port which the proxy would connect                                       | 9960            |
 | OFFLINEMOD_DISABLE_HTTPS  | Enables the patches that allows the proxy to connect to an insecure (HTTP) connection    | 1 (true)        |
+| OFFLINEMOD_FPS_CAP        | Compile-time fallback render-loop cap when the server probe fails. 0 disables.           | 60              |
+| OFFLINEMOD_FPS_CAP_DIAG   | Compile in diagnostic logging for the FPS cap (%TEMP%\offlinemod_fps.log + OutputDebugString) | 0 (off)    |
+
+### FPS cap server probe
+The offline-proxy fetches the desired cap at startup via
+`GET http://127.0.0.1:9960/offline_mod/fps_cap` (the existing InternetConnect
+hook redirects to the configured server). The server returns a bare integer
+in the body; the client applies it on the first valid `Render` call. If the
+probe fails (server down, timeout, unreachable) the compile-time
+`OFFLINEMOD_FPS_CAP` value remains in effect — the cap is never *un-capped*
+by a missing server, just stuck at the build default.
+
+To change the cap without rebuilding the DLL, edit `fps_cap` in the server's
+`deploy/config.json` (under `plugins[0].config.server`) and relaunch the game.
+The probe runs once per game launch; mid-game changes require a restart.
 
 ## Next Steps: Building the Game Client
 Once you’ve successfully built the offline proxy and obtained `libcurl.dll`, refer to the Brave Frontier offline mod documentation for instructions on integrating the proxy with the game client and setting up the local server. This typically involves:
