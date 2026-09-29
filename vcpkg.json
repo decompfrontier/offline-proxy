@@ -8,6 +8,9 @@
         "ldap",
         "non-http"
       ]
+    },
+    {
+      "name": "inih"
     }
   ]
 }

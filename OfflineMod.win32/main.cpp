@@ -5,167 +5,10 @@
 * @brief Entrypoint for Brave Frontier Windows offline mod
 */
 #include "pch.h"
-#include <detours/detours.h>
-#include <serverconfig.h>
-#include "fps_cap.h"
-
-typedef HINTERNET(WINAPI* InternetConnectW_t)(
-    _In_ HINTERNET     hInternet,
-    _In_ LPCWSTR       lpszServerName,
-    _In_ INTERNET_PORT nServerPort,
-    _In_ LPCWSTR       lpszUserName,
-    _In_ LPCWSTR       lpszPassword,
-    _In_ DWORD         dwService,
-    _In_ DWORD         dwFlags,
-    _In_ DWORD_PTR     dwContext
-);
-
-typedef HINTERNET(WINAPI* InternetConnectA_t)(
-    _In_ HINTERNET     hInternet,
-    _In_ LPCSTR        lpszServerName,
-    _In_ INTERNET_PORT nServerPort,
-    _In_ LPCSTR        lpszUserName,
-    _In_ LPCSTR        lpszPassword,
-    _In_ DWORD         dwService,
-    _In_ DWORD         dwFlags,
-    _In_ DWORD_PTR     dwContext
-);
-
-typedef HINTERNET(WINAPI* HttpOpenRequestA_t)(
-    _In_ HINTERNET hConnect,
-    _In_ LPCSTR    lpszVerb,
-    _In_ LPCSTR    lpszObjectName,
-    _In_ LPCSTR    lpszVersion,
-    _In_ LPCSTR    lpszReferrer,
-    _In_ LPCSTR* lplpszAcceptTypes,
-    _In_ DWORD     dwFlags,
-    _In_ DWORD_PTR dwContext
-);
-
-typedef HINTERNET(WINAPI* HttpOpenRequestW_t)(
-    _In_ HINTERNET hConnect,
-    _In_ LPCWSTR   lpszVerb,
-    _In_ LPCWSTR   lpszObjectName,
-    _In_ LPCWSTR   lpszVersion,
-    _In_ LPCWSTR   lpszReferrer,
-    _In_ LPCWSTR* lplpszAcceptTypes,
-    _In_ DWORD     dwFlags,
-    _In_ DWORD_PTR dwContext
-);
-
-#ifdef OFFLINE_DEPLOY
-typedef void (WINAPI* OfflineModStartup_t)(void);
-static HMODULE g_ofmLib = nullptr;
-static OfflineModStartup_t g_ofmStartup = nullptr;
-#endif
-
-static InternetConnectW_t TrueInternetConnectW = InternetConnectW;
-static InternetConnectA_t TrueInternetConnectA = InternetConnectA;
-static HttpOpenRequestA_t TrueHttpOpenRequestA = HttpOpenRequestA;
-static HttpOpenRequestW_t TrueHttpOpenRequestW = HttpOpenRequestW;
-
-static HINTERNET WINAPI MyInternetConnectA(
-    _In_ HINTERNET     hInternet,
-    _In_ LPCSTR        lpszServerName,
-    _In_ INTERNET_PORT nServerPort,
-    _In_ LPCSTR        lpszUserName,
-    _In_ LPCSTR        lpszPassword,
-    _In_ DWORD         dwService,
-    _In_ DWORD         dwFlags,
-    _In_ DWORD_PTR     dwContext
-)
-{
-#ifndef OFFLINE_DEPLOY
-    printf("InternetConnectA: %s:%u (SVC:%x)\n", lpszServerName, nServerPort, dwService);
-#endif
-
-    if (strstr(lpszServerName, "microsoft.com") != nullptr || strstr(lpszServerName, "wikia.com") != nullptr || strstr(lpszServerName, "fandom.com") != nullptr)
-        return TrueInternetConnectA(hInternet, lpszServerName, INTERNET_DEFAULT_HTTP_PORT, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
-
-    return TrueInternetConnectA(hInternet, SERVICE_IP, SERVICE_PORT, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
-}
-
-static HINTERNET WINAPI MyInternetConnectW(
-    _In_ HINTERNET     hInternet,
-    _In_ LPCWSTR        lpszServerName,
-    _In_ INTERNET_PORT nServerPort,
-    _In_ LPCWSTR        lpszUserName,
-    _In_ LPCWSTR        lpszPassword,
-    _In_ DWORD         dwService,
-    _In_ DWORD         dwFlags,
-    _In_ DWORD_PTR     dwContext
-)
-{
-#ifndef OFFLINE_DEPLOY
-    wprintf(L"InternetConnectW: %s:%u (SVC:%x)\n", lpszServerName, nServerPort, dwService);
-#endif
-
-    if (wcswcs(lpszServerName, L"microsoft.com") != nullptr || wcswcs(lpszServerName, L"wikia.com") != nullptr || wcswcs(lpszServerName, L"fandom.com") != nullptr)
-        return TrueInternetConnectW(hInternet, lpszServerName, INTERNET_DEFAULT_HTTP_PORT, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
-
-    return TrueInternetConnectW(hInternet, SERVICE_IP_W, SERVICE_PORT, lpszUserName, lpszPassword, dwService, dwFlags, dwContext);
-}
-
-static void PatchSecurityOptions(HINTERNET hInternet)
-{
-    DWORD dwFlags2;
-    DWORD dwBuffLen = sizeof(dwFlags2);
-
-    if (InternetQueryOption(hInternet, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags2, &dwBuffLen))
-    {
-#ifndef OFFLINE_DEPLOY
-        printf("patched options...\n");
-#endif
-        dwFlags2 |= SECURITY_SET_MASK;
-        InternetSetOption(hInternet, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags2, sizeof(dwFlags2));
-    }
-}
-
-static HINTERNET WINAPI MyHttpOpenRequestA(
-    _In_ HINTERNET hConnect,
-    _In_ LPCSTR    lpszVerb,
-    _In_ LPCSTR    lpszObjectName,
-    _In_ LPCSTR    lpszVersion,
-    _In_ LPCSTR    lpszReferrer,
-    _In_ LPCSTR* lplpszAcceptTypes,
-    _In_ DWORD     dwFlags,
-    _In_ DWORD_PTR dwContext
-)
-{
-    dwFlags &= ~INTERNET_FLAG_SECURE;
-    dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID;
-    auto ret = TrueHttpOpenRequestA(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
-
-    if (!ret)
-        return nullptr;
-
-    PatchSecurityOptions(ret);
-    return ret;
-}
-
-#if SERVICE_DISABLE_HTTPS
-HINTERNET WINAPI MyHttpOpenRequestW(
-    _In_ HINTERNET hConnect,
-    _In_ LPCWSTR   lpszVerb,
-    _In_ LPCWSTR   lpszObjectName,
-    _In_ LPCWSTR   lpszVersion,
-    _In_ LPCWSTR   lpszReferrer,
-    _In_ LPCWSTR* lplpszAcceptTypes,
-    _In_ DWORD     dwFlags,
-    _In_ DWORD_PTR dwContext
-)
-{
-    dwFlags &= ~INTERNET_FLAG_SECURE;
-    dwFlags |= INTERNET_FLAG_IGNORE_CERT_CN_INVALID | INTERNET_FLAG_IGNORE_CERT_DATE_INVALID;
-    auto ret = TrueHttpOpenRequestW(hConnect, lpszVerb, lpszObjectName, lpszVersion, lpszReferrer, lplpszAcceptTypes, dwFlags, dwContext);
-
-    if (!ret)
-        return nullptr;
-
-    PatchSecurityOptions(ret);
-    return ret;
-}
-#endif
+#include "config.h"
+#include "patch.h"
+#include "log.h"
+#include "console.h"
 
 static void DetourDetach()
 {
@@ -195,6 +38,12 @@ static void DetourAttach()
     DetourTransactionCommit();
 }
 
+static ConsoleAPI g_theConsole;
+static GimuServerAPI g_theApi;
+static ProxyConfig g_config;
+
+static void FreeDll(void);
+
 BOOL WINAPI DllMain(
     HINSTANCE hinstDLL,  // handle to DLL module
     DWORD fdwReason,     // reason for calling function
@@ -203,46 +52,62 @@ BOOL WINAPI DllMain(
     (void)hinstDLL;
     (void)lpvReserved;
 
-    if (fdwReason == DLL_PROCESS_DETACH)
+    if (fdwReason == DLL_PROCESS_ATTACH)
     {
-#ifdef OFFLINE_DEPLOY
-        if (g_ofmLib)
+        if (!g_config.Load("proxy.ini"))
         {
-            FreeLibrary(g_ofmLib);
+            MessageBoxW(nullptr, L"Unable to load the proxy configuration\nPlease make sure the proxy correctly!\nFor more information, visit decompfrontier proxy repository", L"Fatal Error", MB_OK | MB_ICONERROR);
+            FreeDll();
+            return FALSE;
         }
-#endif
-        DetourDetach();
+
+        if (g_config.enable_diagnostics)
+        {
+            if (!g_theConsole.Init())
+            {
+                MessageBoxW(nullptr, L"Unable to allocate diagnostic console...", L"Fatal Error", MB_OK | MB_ICONERROR);
+                FreeDll();
+                return FALSE;
+            }
+        }
+
+        if (!getLog().Init(g_config.log_file.c_str(), g_config.enable_diagnostics))
+        {
+            MessageBoxW(nullptr, L"Unable to spawn logging system...", L"Fatal Error", MB_OK | MB_ICONERROR);
+            FreeDll();
+            return FALSE;
+        }
+
+        if (g_config.enable_deploy_mode)
+        {
+            if (!g_theApi.Load(GIMUSERVER_DLL_NAME))
+            {
+                MessageBoxW(nullptr, L"Unable to find or load the offline server component\nPlease make sure you installed gimuserver correctly!\nFor more information, visit decompfrontier proxy repository", L"Fatal Error", MB_OK | MB_ICONERROR);
+                FreeDll();
+                return FALSE;
+            }
+
+            g_theApi.Startup(g_config.port); // startup the offline mod
+        }
+
+        if (!PatchStart(g_config))
+        {
+            MessageBoxW(nullptr, L"Unable to patch the game executable, the proxy will not work\n", L"Fatal Error", MB_OK | MB_ICONERROR);
+            FreeDll();
+            return FALSE;
+        }
     }
-    else if (fdwReason == DLL_PROCESS_ATTACH)
+    else if (fdwReason == DLL_PROCESS_DETACH)
     {
-#ifndef OFFLINE_DEPLOY
-        if (!AllocConsole())
-        {
-            MessageBoxA(nullptr, "ALLOC_CONSOLE_FAILED", "DEBUG", MB_OK | MB_ICONERROR);
-        }
-        FILE* dummy;
-        freopen_s(&dummy, "CONOUT$", "w", stdout);
-        freopen_s(&dummy, "CONOUT$", "w", stderr);
-#else
-        g_ofmLib = LoadLibraryW(L"offlinemod.dll");
-        if (!g_ofmLib)
-        {
-            MessageBoxA(nullptr, "Unable to find the offline mod component, the application will now exit!", "Fatal Error", MB_OK | MB_ICONERROR);
-            return FALSE;
-        }
-        g_ofmStartup = (OfflineModStartup_t)GetProcAddress(g_ofmLib, "OfflineMod_startup");
-        if (!g_ofmStartup)
-        {
-            MessageBoxA(nullptr, "The offline mod component is corrupted, the application will now exit!", "Fatal Error", MB_OK | MB_ICONERROR);
-            FreeLibrary(g_ofmLib);
-            return FALSE;
-        }
-
-        g_ofmStartup();
-#endif
-
-        DetourAttach();
+        FreeDll();
     }
 
     return TRUE;
+}
+
+void FreeDll(void)
+{
+    g_theApi.Free();
+    getLog().Free();
+    g_theConsole.Free();
 }

@@ -7,7 +7,8 @@
     },
     "configurePresets": [
         {
-            "name": "vs",
+            "name": "vs2022",
+            "displayName": "(DO NOT USE) Build configuration for VS2022",
             "generator": "Visual Studio 17 2022",
             "architecture": "Win32",
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
@@ -20,7 +21,22 @@
             "hidden": true
         },
         {
+            "name": "vs2026",
+            "displayName": "(DO NOT USE) Build configuration for VS2026",
+            "generator": "Visual Studio 18 2026",
+            "architecture": "Win32",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "cacheVariables": {
+                "VCPKG_TARGET_TRIPLET": {
+                    "type": "STRING",
+                    "value": "x86-windows-static"
+                }
+            },
+            "hidden": true
+        },
+        {
             "name": "mingw",
+            "displayName": "(DO NOT USE) Build configuration for MinGW",
             "generator": "Ninja",
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "cacheVariables": {
@@ -40,8 +56,26 @@
             "hidden": true
         },
         {
-            "name": "deploy-vs",
-            "inherits": "vs",
+            "name": "deploy-vs2022",
+            "displayName": "Release/Deployment build with Visual Studio 2022",
+            "binaryDir": "${sourceDir}/build/deploy-vs2022",
+            "inherits": "vs2022",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "RelWithDebInfo"
+                },
+                "OFFLINEMOD_DEPLOY": {
+                    "type": "BOOL",
+                    "value": true
+                }
+            }
+        },
+        {
+            "name": "deploy-vs2026",
+            "displayName": "Release/Deployment build with Visual Studio 2026",
+            "binaryDir": "${sourceDir}/build/deploy-vs2026",
+            "inherits": "vs2026",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES" : {
                     "type": "STRING",
@@ -55,6 +89,8 @@
         },
         {
             "name": "deploy-mingw",
+            "displayName": "Release/Deployment build with MinGW",
+            "binaryDir": "${sourceDir}/build/deploy-mingw",
             "inherits": "mingw",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES" : {
@@ -68,8 +104,22 @@
             }
         },
         {
-            "name": "debug-vs",
-            "inherits": "vs",
+            "name": "debug-vs2022",
+            "displayName": "Debug/Development build with Visual Studio 2022",
+            "binaryDir": "${sourceDir}/build/debug-vs2022",
+            "inherits": "vs2022",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES" : {
+                    "type": "STRING",
+                    "value": "Debug"
+                }
+            }
+        },
+        {
+            "name": "debug-vs2026",
+            "displayName": "Debug/Development build with Visual Studio 2026",
+            "binaryDir": "${sourceDir}/build/debug-vs2026",
+            "inherits": "vs2026",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES" : {
                     "type": "STRING",
@@ -79,6 +129,8 @@
         },
         {
             "name": "debug-mingw",
+            "displayName": "Debug/Development build with MinGW",
+            "binaryDir": "${sourceDir}/build/debug-mingw",
             "inherits": "mingw",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES" : {

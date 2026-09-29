@@ -454,3 +454,4 @@ CTestTestfile.cmake
 _deps
 CMakeUserPresets.json
 build.ninja
+build/

@@ -29,8 +29,6 @@
 #include "pch.h"
 #include "fps_cap.h"
 
-#if defined(FPS_CAP) && FPS_CAP > 0
-
 #include <stdlib.h>  // atoi
 #include <detours/detours.h>
 
@@ -391,5 +389,3 @@ void FpsCap_Detach(void)
             g_renderCalls, g_renderSkips, g_swapCalls, g_swapSkips);
 #endif
 }
-
-#endif // FPS_CAP > 0
