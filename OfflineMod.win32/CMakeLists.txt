@@ -1,10 +1,9 @@
-configure_file("${CMAKE_CURRENT_LIST_DIR}/serverconfig.h.cmake" "${CMAKE_CURRENT_BINARY_DIR}/generated/serverconfig.h")
 
 add_library(offlineproxy SHARED
     main.cpp
     libcurl_export.cpp
     Source.def
-    #Resource.rc
+    Resource.rc
     resource.h
     pch.h
     console.h
@@ -15,6 +14,7 @@ add_library(offlineproxy SHARED
     util.h
     util.cpp
     patch.h
+    patch.cpp
     patch/patch_http.cpp
     patch/patch_fps.cpp
     patch/patch_http.h

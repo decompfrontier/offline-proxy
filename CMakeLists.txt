@@ -1,9 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 project(offlineproxy)
 
+
 if (NOT WIN32)
     message(FATAL_ERROR "The offline proxy is supported only in Windows")
 endif()
+
+enable_language(RC)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")

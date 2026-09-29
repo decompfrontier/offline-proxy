@@ -6,3 +6,9 @@
 */
 #pragma once
 
+struct PatchFPSCAP
+{
+    bool Attach(void);
+    void Detach(void);
+};
+

@@ -12,9 +12,11 @@
 
 struct PatchAPI
 {
-	PatchHTTPAPI &http;
+	bool Attach(void);
+	void Detach(void);
+
+	PatchFPSCAP fpscap;
+	PatchHTTPAPI http;
 };
 
 extern PatchAPI& getAPI(void);
-
-bool PatchStart(const ProxyConfig& cfg);

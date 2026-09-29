@@ -22,6 +22,15 @@ struct ProxyConfig
 	bool enable_diagnostics;
 	bool enable_deploy_mode;
 
+	ProxyConfig() : port(0),
+		fps_cap(0),
+		enable_https(false),
+		enable_diagnostics(false),
+		enable_deploy_mode(false)
+	{
+	}
+
+
 	bool Load(const char *path);
 
 private:

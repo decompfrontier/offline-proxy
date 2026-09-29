@@ -28,6 +28,8 @@ struct ConsoleAPI
             freopen_s(&dummy, "CONOUT$", "w", stderr);
             init = true;
         }
+
+        return init;
     }
 
 private:

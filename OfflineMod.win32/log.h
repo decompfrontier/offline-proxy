@@ -27,7 +27,6 @@ struct MyLog
 			fclose(file);
 			file = nullptr;
 		}
-		mutex.unlock();
 	}
 
 	bool Init(const wchar_t *path, bool toStdout);
@@ -36,12 +35,12 @@ struct MyLog
 	void Work(MyLogLevel lvl, const char* fmt, Args&&... args)
 	{
 		std::string buffer = "";
-		appendTime(buffer);
+		appendTime(lvl, buffer);
 
 		auto current = buffer.size();
 		auto size = std::snprintf(nullptr, 0, fmt, std::forward<Args>(args)...);
 		buffer.resize(current + size + 1);
-		std::snprintf(&buffer.data()[current], fmt, std::forward<Args>(args)...);
+		std::snprintf(&buffer[current], size, fmt, std::forward<Args>(args)...);
 		buffer.resize(current + size);
 
 		mutex.lock();

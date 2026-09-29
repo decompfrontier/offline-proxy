@@ -10,36 +10,8 @@
 #include "log.h"
 #include "console.h"
 
-static void DetourDetach()
-{
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourDetach(&(PVOID&)TrueInternetConnectA, (PVOID)MyInternetConnectA);
-    DetourDetach(&(PVOID&)TrueInternetConnectW, (PVOID)MyInternetConnectW);
-#if SERVICE_DISABLE_HTTPS
-    DetourDetach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
-    DetourDetach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
-#endif
-    FpsCap_Detach();
-    DetourTransactionCommit();
-}
-
-static void DetourAttach()
-{
-    DetourTransactionBegin();
-    DetourUpdateThread(GetCurrentThread());
-    DetourAttach(&(PVOID&)TrueInternetConnectA, (PVOID)MyInternetConnectA);
-    DetourAttach(&(PVOID&)TrueInternetConnectW, (PVOID)MyInternetConnectW);
-#if SERVICE_DISABLE_HTTPS
-    DetourAttach(&(PVOID&)TrueHttpOpenRequestA, (PVOID)MyHttpOpenRequestA);
-    DetourAttach(&(PVOID&)TrueHttpOpenRequestW, (PVOID)MyHttpOpenRequestW);
-#endif
-    FpsCap_Attach();
-    DetourTransactionCommit();
-}
-
 static ConsoleAPI g_theConsole;
-static GimuServerAPI g_theApi;
+static GimuServerAPI g_theServer;
 static ProxyConfig g_config;
 
 static void FreeDll(void);
@@ -80,17 +52,17 @@ BOOL WINAPI DllMain(
 
         if (g_config.enable_deploy_mode)
         {
-            if (!g_theApi.Load(GIMUSERVER_DLL_NAME))
+            if (!g_theServer.Load(GIMUSERVER_DLL_NAME))
             {
                 MessageBoxW(nullptr, L"Unable to find or load the offline server component\nPlease make sure you installed gimuserver correctly!\nFor more information, visit decompfrontier proxy repository", L"Fatal Error", MB_OK | MB_ICONERROR);
                 FreeDll();
                 return FALSE;
             }
 
-            g_theApi.Startup(g_config.port); // startup the offline mod
+            g_theServer.Startup(g_config.port); // startup the offline mod
         }
 
-        if (!PatchStart(g_config))
+        if (!getAPI().Attach())
         {
             MessageBoxW(nullptr, L"Unable to patch the game executable, the proxy will not work\n", L"Fatal Error", MB_OK | MB_ICONERROR);
             FreeDll();
@@ -99,6 +71,7 @@ BOOL WINAPI DllMain(
     }
     else if (fdwReason == DLL_PROCESS_DETACH)
     {
+        getAPI().Detach();
         FreeDll();
     }
 
@@ -107,7 +80,7 @@ BOOL WINAPI DllMain(
 
 void FreeDll(void)
 {
-    g_theApi.Free();
+    g_theServer.Free();
     getLog().Free();
     g_theConsole.Free();
 }

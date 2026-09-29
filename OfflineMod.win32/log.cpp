@@ -14,7 +14,7 @@ static constexpr const char g_startupMsg[] = "\r\n--- offline proxy startup ---\
 
 static constexpr const char *log_get_level_str(MyLogLevel level);
 
-static MyLog g_theLog = MyLog();
+static MyLog g_theLog;
 
 bool MyLog::Init(const wchar_t * path, bool toStdout)
 {

@@ -27,7 +27,7 @@
 * for any other cocos2d build.
 */
 #include "pch.h"
-#include "fps_cap.h"
+#include "patch_fps.h"
 
 #include <stdlib.h>  // atoi
 #include <detours/detours.h>
